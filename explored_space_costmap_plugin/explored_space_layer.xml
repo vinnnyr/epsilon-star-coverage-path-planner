@@ -1,0 +1,5 @@
+<library path="explored_space_costmap_plugin_core">
+	<class name="explored_space_costmap_plugin::ExploredSpaceLayer" type="explored_space_costmap_plugin::ExploredSpaceLayer" base_class_type="nav2_costmap_2d::Layer">
+	  <description> A costmap plugin that populates the area that the robot has already traversed </description>
+  </class>
+</library>
