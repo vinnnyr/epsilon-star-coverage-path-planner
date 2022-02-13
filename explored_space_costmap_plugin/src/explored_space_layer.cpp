@@ -18,6 +18,10 @@
 #include "nav2_costmap_2d/footprint.hpp"
 #include "rclcpp/parameter_events_filter.hpp"
 
+using nav2_costmap_2d::NO_INFORMATION;
+using nav2_costmap_2d::LETHAL_OBSTACLE;
+using nav2_costmap_2d::FREE_SPACE;
+
 namespace explored_space_costmap_plugin
 {
 
@@ -28,7 +32,6 @@ ExploredSpaceLayer::ExploredSpaceLayer()
 void ExploredSpaceLayer::onInitialize()
 {
   auto node = node_.lock();
-
   declareParameter("enabled", rclcpp::ParameterValue(true));
   node->get_parameter(name_ + "." + "enabled", enabled_);
 
@@ -43,12 +46,18 @@ void ExploredSpaceLayer::updateBounds(
   double robot_x, double robot_y, double /**robot_yaw**/,
   double * min_x, double * min_y, double * max_x, double * max_y)
 {
+  if(!enabled_){
+    return;
+  }
+  // TODO(vinnnyr): check if rolling, if so, set origin
   matchSize();
-  *min_x = *min_y = -std::numeric_limits<double>::max();
-  *max_x = *max_y = std::numeric_limits<double>::max();
+  useExtraBounds(min_x, min_y, max_x, max_y); 
+  touch(robot_x, robot_y, min_x, min_y, max_x, max_y);  
 
   robot_x_ = robot_x;
   robot_y_ = robot_y;
+
+  // TODO(vinnnyr): updateFootprint
 
 }
 
@@ -61,7 +70,7 @@ void ExploredSpaceLayer::updateCosts(
     current_ = true;
     return;
   }
-
+  current_ = true;
   unsigned char * master_array = master_grid.getCharMap();
   unsigned int size_x = master_grid.getSizeInCellsX(), size_y = master_grid.getSizeInCellsY();
 
@@ -69,8 +78,8 @@ void ExploredSpaceLayer::updateCosts(
   master_grid.worldToMap(robot_x_, robot_y_, map_i, map_j);
   
   unsigned int cell_dist = master_grid.cellDistance(robot_radius_m_);
-  min_i = map_i - (2 * cell_dist);
-  max_i = map_i - (0.5 * cell_dist);
+  min_i = map_i - (1 * cell_dist);
+  max_i = map_i;
   min_j = map_j - cell_dist;
   max_j = map_j + (cell_dist);
 
@@ -84,7 +93,7 @@ void ExploredSpaceLayer::updateCosts(
   max_i = std::min(static_cast<int>(size_x), max_i);
   max_j = std::min(static_cast<int>(size_y), max_j);
 
-  updateWithMax(master_grid, min_i, min_j, max_i, max_j);
+  updateWithAddition(master_grid, min_i, min_j, max_i, max_j);
 }
 
 }
