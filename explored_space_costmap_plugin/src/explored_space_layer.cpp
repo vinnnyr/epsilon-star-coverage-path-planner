@@ -65,19 +65,22 @@ void ExploredSpaceLayer::updateCosts(
   nav2_costmap_2d::Costmap2D & master_grid,
   int min_i, int min_j, int max_i, int max_j)
 {
-
+  // always enabled
   if (!enabled_) {
     current_ = true;
     return;
   }
   current_ = true;
+
   unsigned char * master_array = master_grid.getCharMap();
   unsigned int size_x = master_grid.getSizeInCellsX(), size_y = master_grid.getSizeInCellsY();
 
   unsigned int map_i, map_j;
   master_grid.worldToMap(robot_x_, robot_y_, map_i, map_j);
   
-  unsigned int cell_dist = master_grid.cellDistance(robot_radius_m_);
+  // unsigned int cell_dist = master_grid.cellDistance(robot_radius_m_);
+  // TODO(vinny): remove when we want to start accounting for the robot size
+  unsigned int cell_dist = 0;
   min_i = map_i - (1 * cell_dist);
   max_i = map_i;
   min_j = map_j - cell_dist;
